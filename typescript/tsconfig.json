@@ -1,0 +1,25 @@
+{
+  "//": [
+    "Type checking only. Nothing here is built: modern Node runs these .ts files",
+    "directly by stripping the type annotations, so there is no compile step to",
+    "get wrong and nothing generated to keep in sync.",
+    "",
+    "`allowImportingTsExtensions` is what lets the imports name .ts explicitly,",
+    "which is what Node itself requires — it strips types, it does not resolve",
+    "module paths the way a bundler would."
+  ],
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["*.ts"]
+}

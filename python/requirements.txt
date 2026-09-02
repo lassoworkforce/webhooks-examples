@@ -1,0 +1,17 @@
+# Everything needed to run every example here and the test suite.
+#
+# Note what is *not* required: `verify.py` and `sign.py` use nothing but the
+# standard library. If you copy the dependency-free verifier into your own
+# project, you need none of this.
+
+# The reference implementation. Used by `verify_with_library.py`, and by the
+# test suite to check that our own verifier agrees with it.
+standardwebhooks>=1.0.0
+
+# The test suite.
+pytest>=8.0
+
+# The two example servers. Install whichever one you actually use.
+flask>=3.0
+fastapi>=0.110
+uvicorn>=0.29

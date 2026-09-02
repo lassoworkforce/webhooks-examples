@@ -1,0 +1,100 @@
+name: Tests
+
+# Both suites verify the same fixture in `fixtures/`, and both check themselves
+# against the Standard Webhooks reference implementation. Dependencies are
+# resolved fresh rather than from a lockfile on purpose: if a new release of
+# that library stops agreeing with us, this is where we want to find out.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly, so drift in the reference implementation surfaces without waiting
+    # for somebody to push a change to an examples repository.
+    - cron: "0 6 * * 1"
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest version that runs .ts files without a flag, and current.
+        node: ["22.18", "24"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install
+        working-directory: typescript
+      - run: npm test
+        working-directory: typescript
+      - run: npm run typecheck
+        working-directory: typescript
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -r requirements.txt
+        working-directory: python
+      - run: pytest
+        working-directory: python
+
+  # Prove the two languages agree end to end, rather than only agreeing with a
+  # fixture: the Python signer delivers to the Express endpoint, and the
+  # TypeScript signer delivers to the FastAPI one. A change that breaks
+  # cross-language interoperability fails here even if both suites still pass.
+  interoperability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - run: npm install
+        working-directory: typescript
+      - run: pip install -r requirements.txt
+        working-directory: python
+
+      - name: Python signer against the Express endpoint
+        working-directory: .
+        env:
+          LASSO_WEBHOOK_SECRET: whsec_dGVzdC1zZWNyZXQtZm9yLWNpLW9ubHk=
+        run: |
+          PORT=3000 node typescript/server-express.ts &
+          npx --yes wait-on -t 30000 tcp:3000
+          cd python
+          URL=http://localhost:3000/webhooks/lasso
+          python sign.py --url $URL --secret "$LASSO_WEBHOOK_SECRET"
+          python sign.py --url $URL --secret "$LASSO_WEBHOOK_SECRET" --tamper
+          python sign.py --url $URL --secret "$LASSO_WEBHOOK_SECRET" --stale
+          python sign.py --url $URL --secret "$LASSO_WEBHOOK_SECRET" --unsigned
+
+      - name: TypeScript signer against the FastAPI endpoint
+        env:
+          LASSO_WEBHOOK_SECRET: whsec_dGVzdC1zZWNyZXQtZm9yLWNpLW9ubHk=
+        run: |
+          cd python
+          uvicorn server_fastapi:app --port 8000 &
+          cd ..
+          npx --yes wait-on -t 30000 tcp:8000
+          cd typescript
+          URL=http://localhost:8000/webhooks/lasso
+          node sign.ts --url $URL --secret "$LASSO_WEBHOOK_SECRET"
+          node sign.ts --url $URL --secret "$LASSO_WEBHOOK_SECRET" --tamper
+          node sign.ts --url $URL --secret "$LASSO_WEBHOOK_SECRET" --stale
+          node sign.ts --url $URL --secret "$LASSO_WEBHOOK_SECRET" --unsigned

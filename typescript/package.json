@@ -1,0 +1,27 @@
+{
+  "name": "lasso-webhooks-examples",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Examples of verifying signed LASSO webhooks in TypeScript",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test *.test.ts",
+    "typecheck": "tsc --noEmit",
+    "fixture": "node verify-with-library.ts",
+    "server": "node server-express.ts",
+    "sign": "node sign.ts"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "standardwebhooks": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

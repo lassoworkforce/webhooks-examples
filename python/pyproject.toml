@@ -1,0 +1,6 @@
+# Configuration only. These files are meant to be read and copied rather than
+# installed, so this is deliberately not a packaged distribution — dependencies
+# live in `requirements.txt`.
+
+[tool.pytest.ini_options]
+testpaths = ["."]

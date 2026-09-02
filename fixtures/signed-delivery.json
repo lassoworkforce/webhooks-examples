@@ -1,0 +1,20 @@
+{
+  "comment": [
+    "A known-answer test vector for a signed LASSO webhook delivery.",
+    "The secret is a throwaway generated for this file and signs nothing real.",
+    "`body` holds the request body as an exact string. Verify against these bytes:",
+    "re-serializing the parsed JSON will change them and the signature will not match.",
+    "`webhook-timestamp` is fixed in the past on purpose, so a freshness check will",
+    "reject this delivery. Test signature correctness and freshness separately.",
+    "`data` carries a non-ASCII character deliberately: the signature covers UTF-8",
+    "bytes, so a verifier that re-encodes or counts characters fails on it."
+  ],
+  "secret": "whsec_XxZZqMq7c8nk6nfhhH5au0cWL+MryOG2",
+  "headers": {
+    "content-type": "application/json",
+    "webhook-id": "2026/09/02/61bd0a1e.json",
+    "webhook-timestamp": "1788350400",
+    "webhook-signature": "v1,jTGVNmWtTgG0fnkGfJoW0jWViKo3BCJeeS+behauedk="
+  },
+  "body": "{\"event\":\"test.event\",\"id\":4815162342,\"data\":\"foobär\"}"
+}
